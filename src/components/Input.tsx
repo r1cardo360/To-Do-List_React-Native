@@ -6,7 +6,7 @@ import {Picker} from '@react-native-picker/picker';
 import List from './List';
 
 interface props{
-    addTask:(task:{id:number, task:string, color:string}) => void;
+    addTask:(task:{id:number, task:string, color:string, isCompleted:boolean}) => void;
 }
 
 export default function Input({addTask}:props){
@@ -36,6 +36,7 @@ export default function Input({addTask}:props){
                 id: new Date().getTime(),
                 task: inputValue,
                 color: iconColor,
+                isCompleted:false,
             };
             addTask(newTask);
             setInptValue('');
@@ -51,6 +52,7 @@ export default function Input({addTask}:props){
                     placeholder='O que você vai fazer hoje ?'
                     underlineColorAndroid='transparent'
                     onChangeText={(inputValue) => setInptValue(inputValue)}
+                    value={inputValue}
                 />
 
                 <View style={[styles.inputForm, styles.boxPicker]}>

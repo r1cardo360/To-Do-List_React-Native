@@ -10,23 +10,28 @@ interface ContentProps {
     id: number;
     task: string;
     color: string;
-  }
+    isCompleted:boolean
+  };
+
+  onCheck:(id:number) => void;
+  onDelete:(id: number) => void;
+
 }
 
-export default function Content({ task }: ContentProps) {
+export default function Content({ task, onCheck, onDelete }: ContentProps) {
 
   return (
     <View style={styles.boxList}>
       <View style={styles.boxButtons}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => onCheck(task.id)}>
           <Icon name='checksquareo' size={20} color="#1c571a" style={styles.icon} />
         </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => onDelete(task.id)}>
           <Icon2 name='trash-o' size={20} color="#a50000" style={styles.icon} />
         </TouchableOpacity>
       </View>
       <View style={styles.boxTextTask}>
-        <Text style={styles.textList}>{task.task}</Text>
+        <Text style={[styles.textList, task.isCompleted && styles.completedText]}>{task.task}</Text>
       </View>
       <View style={styles.boxTextStatus}>
         <View style={styles.boxIcon}>
@@ -57,6 +62,10 @@ const styles = StyleSheet.create({
   textList:{
     fontSize:16,
     flexWrap:'wrap',
+  },
+  completedText: {
+    textDecorationLine: 'line-through',
+    color: '#a3d9a5',
   },
   statusList:{
     fontSize:18,

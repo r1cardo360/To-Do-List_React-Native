@@ -16,10 +16,38 @@ import Input from './src/components/Input';
 export default function App() {
 
   //Estates
-  const [listTask, setListTask] = useState<{id:number; task: string, color:string}[]>([]);
+  const [listTask, setListTask] = useState<{id:number; task: string, color:string, isCompleted:boolean}[]>([]);
 
-  function handleAddTask(newTask: {id:number; task:string; color:string}){
-    setListTask((prevList) => [...prevList, newTask]);
+  function handleAddTask(newTask: { id: number; task: string; color: string }) {
+    setListTask((prevList) => {
+      const updatedList = [...prevList, { ...newTask, isCompleted: false }];
+      
+      updatedList.sort((a, b) => {
+        if (a.isCompleted === b.isCompleted) return 0;
+        return a.isCompleted ? 1 : -1;
+      });
+
+      return updatedList;
+    });
+  }
+
+  function handleDeleteTask(id: number) {
+    setListTask((prevList) => prevList.filter(task => task.id !== id));
+  }
+
+  function handleCheckTask(id: number) {
+    setListTask((prevList) => {
+      const updatedList = prevList.map((task) =>
+        task.id === id ? { ...task, isCompleted: !task.isCompleted } : task 
+      );
+
+      updatedList.sort((a, b) => {
+        if (a.isCompleted === b.isCompleted) return 0; 
+        return a.isCompleted ? 1 : -1; 
+      });
+
+      return updatedList;
+    });
   }
 
   return (
@@ -38,7 +66,7 @@ export default function App() {
           data={listTask}
           showsVerticalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={({item}) => <Content task={item}/>}
+          renderItem={({item}) => <Content task={item} onCheck={handleCheckTask} onDelete={handleDeleteTask} />}
         />
       </View>
     </View>
