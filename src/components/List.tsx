@@ -4,6 +4,8 @@ import { StyleSheet, Text, View, TextInput, TouchableOpacity } from "react-nativ
 import Icon from 'react-native-vector-icons/AntDesign'
 import Icon2 from 'react-native-vector-icons/FontAwesome'
 
+import Checkbox from 'expo-checkbox';
+
 // Tipando as props para que o componente Content receba a task
 interface ContentProps {
   task:{
@@ -24,7 +26,10 @@ export default function Content({ task, onCheck, onDelete }: ContentProps) {
     <View style={styles.boxList}>
       <View style={styles.boxButtons}>
         <TouchableOpacity onPress={() => onCheck(task.id)}>
-          <Icon name='checksquareo' size={20} color="#1c571a" style={styles.icon} />
+          <Checkbox 
+            value={task.isCompleted}
+            onValueChange={() => onCheck(task.id)}
+          />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => onDelete(task.id)}>
           <Icon2 name='trash-o' size={20} color="#a50000" style={styles.icon} />

@@ -20,7 +20,7 @@ export default function App() {
 
   function handleAddTask(newTask: { id: number; task: string; color: string }) {
     setListTask((prevList) => {
-      const updatedList = [...prevList, { ...newTask, isCompleted: false }];
+      const updatedList = [{ ...newTask, isCompleted: false }, ...prevList];
       
       updatedList.sort((a, b) => {
         if (a.isCompleted === b.isCompleted) return 0;
@@ -97,7 +97,7 @@ const styles = StyleSheet.create({
     width:'90%',
     alignItems:'center',
     justifyContent:'center',
-    height:400,
+    height:'40%',
     borderWidth:1,
     borderBlockColor:'#000',
     borderRadius:15,

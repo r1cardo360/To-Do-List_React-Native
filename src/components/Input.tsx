@@ -1,9 +1,8 @@
 import React, {useState} from 'react'
-import {View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native'; 
+import {View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList} from 'react-native'; 
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Picker} from '@react-native-picker/picker';
-import List from './List';
 
 interface props{
     addTask:(task:{id:number, task:string, color:string, isCompleted:boolean}) => void;
@@ -13,7 +12,7 @@ export default function Input({addTask}:props){
 
     const [inputValue, setInptValue] = useState('');
     const [iconValue, setIconValue] = useState(1);
-    const [objectList, setObectList] = useState()
+    const [dataApi, setDataApi] = useState([{id:Number, task:String}]);
 
     function adicionar(){
         
@@ -54,6 +53,7 @@ export default function Input({addTask}:props){
                     onChangeText={(inputValue) => setInptValue(inputValue)}
                     value={inputValue}
                 />
+
 
                 <View style={[styles.inputForm, styles.boxPicker]}>
                     <Picker style={styles.picker} onValueChange={(input:number) => setIconValue(input)}>
