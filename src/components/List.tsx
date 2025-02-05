@@ -1,5 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput } from "react-native";
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from "react-native";
+
+import Icon from 'react-native-vector-icons/AntDesign'
+import Icon2 from 'react-native-vector-icons/FontAwesome'
 
 // Tipando as props para que o componente Content receba a task
 interface ContentProps {
@@ -14,8 +17,22 @@ export default function Content({ task }: ContentProps) {
 
   return (
     <View style={styles.boxList}>
+      <View style={styles.boxButtons}>
+        <TouchableOpacity>
+          <Icon name='checksquareo' size={20} color="#1c571a" style={styles.icon} />
+        </TouchableOpacity>
+        <TouchableOpacity>
+          <Icon2 name='trash-o' size={20} color="#a50000" style={styles.icon} />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.boxTextTask}>
         <Text style={styles.textList}>{task.task}</Text>
-        <Text style={styles.statusList}>{task.status}</Text>
+      </View>
+      <View style={styles.boxTextStatus}>
+        <View style={styles.boxIcon}>
+          <Text style={styles.statusList}><Icon name={task.status} size={20} color="#000" style={styles.icon} /></Text>
+        </View>
+      </View>
     </View>
   );
 }
@@ -26,15 +43,42 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingLeft:15,
     borderWidth:0.2,
-    borderRadius:1,
-    height:30,
+    borderRadius:20,
+    height:40,
+    marginBottom:8,
+    backgroundColor:'#cfd5e1',
+  },
+  boxButtons:{
+    flexDirection:'row',
+    width:'15%',
+    justifyContent:'space-around',
+    alignItems:'center',
   },
   textList:{
-    fontSize:18,
-    flexWrap:'wrap'
+    fontSize:16,
+    flexWrap:'wrap',
   },
   statusList:{
-    fontSize:20,
+    fontSize:18,
     fontWeight:'bold',
+  },
+  
+  boxTextTask:{
+    width:'65%',
+    alignItems:'center',
+    justifyContent:'center',
+  },
+  boxTextStatus:{
+    width:'10%',
+    alignItems:'center',
+    justifyContent:'center',
+    borderRadius:50,
+  },
+  boxIcon:{
+    backgroundColor:'#d6e0d5',
+    borderRadius:50,
+  },
+  icon:{
+
   }
 });
