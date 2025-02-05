@@ -1,10 +1,47 @@
-import React from 'react'
+import React, {useState} from 'react'
 import {View, Text, StyleSheet, TextInput, TouchableOpacity} from 'react-native'; 
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Picker} from '@react-native-picker/picker';
+import List from './List';
 
-export default function Input(){
+interface props{
+    addTask:(task:{id:number, task:string, color:string}) => void;
+}
+
+export default function Input({addTask}:props){
+
+    const [inputValue, setInptValue] = useState('');
+    const [iconValue, setIconValue] = useState(1);
+    const [objectList, setObectList] = useState()
+
+    function adicionar(){
+        
+        let iconColor = '';
+
+        if(iconValue === 1){
+            iconColor = 'green';
+        }else if(iconValue === 2){
+            iconColor = 'yellow'; 
+        }else if(iconValue === 3){
+            iconColor = 'red';
+        }else{
+            throw new Error("Era esperado uma cor este campo não pode ser vazio ou conter um ou valor que difere do if desta condição");
+        }
+
+        if(inputValue === ''){
+            alert('Adicione alguma tarefa');
+        }else{
+            const newTask = {
+                id: new Date().getTime(),
+                task: inputValue,
+                color: iconColor,
+            };
+            addTask(newTask);
+            setInptValue('');
+        }
+    }
+
     return(
         <View style={styles.boxInput}>
 
@@ -12,18 +49,20 @@ export default function Input(){
                 <TextInput 
                     style={styles.inputForm}
                     placeholder='O que você vai fazer hoje ?'
+                    underlineColorAndroid='transparent'
+                    onChangeText={(inputValue) => setInptValue(inputValue)}
                 />
 
                 <View style={[styles.inputForm, styles.boxPicker]}>
-                    <Picker style={styles.picker}>
-                        <Picker.Item key={1} value={1} label='Alto' />
-                        <Picker.Item key={2} value={2} label='Urgente' />   
-                        <Picker.Item key={3} value={3} label='Regular' />       
+                    <Picker style={styles.picker} onValueChange={(input:number) => setIconValue(input)}>
+                        <Picker.Item key={1} value={1} label='regular' />
+                        <Picker.Item key={2} value={2} label='Alto' />   
+                        <Picker.Item key={3} value={3} label='Urgente' />       
                     </Picker>
                 </View>
             </View> 
 
-            <TouchableOpacity style={styles.btn}>
+            <TouchableOpacity style={styles.btn} onPress={adicionar}>
                 <Text style={styles.textBtn}>ADICIONAR</Text>
                 <Icon name="plus-square-o" size={25}  style={styles.icon} />
             </TouchableOpacity>

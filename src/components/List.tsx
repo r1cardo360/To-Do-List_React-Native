@@ -9,7 +9,7 @@ interface ContentProps {
   task:{
     id: number;
     task: string;
-    status: string;
+    color: string;
   }
 }
 
@@ -30,7 +30,7 @@ export default function Content({ task }: ContentProps) {
       </View>
       <View style={styles.boxTextStatus}>
         <View style={styles.boxIcon}>
-          <Text style={styles.statusList}><Icon name={task.status} size={20} color="#000" style={styles.icon} /></Text>
+          <Text style={styles.statusList}><Icon name='clockcircleo' size={20} color="#000" style={[styles.icon, {color:task.color}]} /></Text>
         </View>
       </View>
     </View>
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     borderRadius:50,
   },
   boxIcon:{
-    backgroundColor:'#d6e0d5',
+    backgroundColor:'#cfd5e1',
     borderRadius:50,
   },
   icon:{
