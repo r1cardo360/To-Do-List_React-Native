@@ -1,23 +1,29 @@
+/*-- IMPORTS PADRAO --*/
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  ImageBackground,
-  FlatList, 
-} from 'react-native';
+import { StyleSheet, Text, View, Button, FlatList } from 'react-native';
 
 /*-- COMPONENTES --*/
 import Header from './src/components/Header';
 import Content from './src/components/List';
 import Input from './src/components/Input';
 
+/*-- IMPORT ASYNCSTORAGE --*/
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
+/*-- IMPORT ROTA DA API --*/
+import api from './src/Services/api';
+
+/*INTERFACE PARA OS DADOS DA API*/
+interface ApiTask {
+  id: number;
+  title: string;
+  completed: boolean;
+}
 
 export default function App() {
 
-  // Estates
+  /*-- ESTADOS --*/
   const [listTask, setListTask] = useState<{id: number; task: string; color: string; isCompleted: boolean}[]>([]);
 
   /*-- SALVAR AS TAREFAS NO ASYNCSTORAGE --*/
@@ -30,7 +36,7 @@ export default function App() {
     }
   }
 
-  /*-- FUNÇÃO PARA CARREGAR AS TAREFAS --*/
+  /*-- FUNÇÃO PARA CARREGAR AS TAREFAS DO ASYNCSTORAGE --*/
   async function loadFromStorage() {
     try {
       const tasksString = await AsyncStorage.getItem('tasks');
@@ -55,7 +61,7 @@ export default function App() {
     }
   }, [listTask]);
 
-  /*FUNÇÃO PARA ADICIONAR UMA TAREFA*/
+  /*-- FUNÇÃO PARA ADICIONAR UMA TAREFA --*/
   function handleAddTask(newTask: { id: number; task: string; color: string }) {
     setListTask((prevList) => {
       const updatedList = [{ ...newTask, isCompleted: false }, ...prevList];
@@ -69,7 +75,7 @@ export default function App() {
     setListTask((prevList) => prevList.filter(task => task.id !== id));
   }
 
-  /*-- FUNÇÃO PARA MARCAR AS TAREFAS COMO CONCLUIDAS*/
+  /*-- FUNÇÃO PARA MARCAR AS TAREFAS COMO CONCLUIDAS --*/
   function handleCheckTask(id: number) {
     setListTask((prevList) => {
       const updatedList = prevList.map((task) =>
@@ -80,7 +86,46 @@ export default function App() {
     });
   }
 
-  /*-- CODIGO  TSX --*/
+  /*-- FUNÇÃO PARA CARREGAR AS TAREFAS DA API --*/
+  async function loadTasksFromApi() {
+    try {
+      const response = await api.get('/todos');
+      const data: ApiTask[] = response.data;
+
+      const mappedTasks = data.map((apiTask: ApiTask) => ({
+        id: apiTask.id,
+        task: apiTask.title,
+        color: 'gray',
+        isCompleted: apiTask.completed,
+      }));
+
+      setListTask((prevList) => {
+        const uniqueTasks = mappedTasks.filter((apiTask) => 
+          !prevList.some((task) => task.id === apiTask.id)
+        );
+
+        const updatedList = [...prevList, ...uniqueTasks];
+
+        updatedList.sort((a, b) => (a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1));
+        return updatedList;
+      });
+    } catch (error) {
+      console.error('Erro ao carregar tarefas da API:', error);
+    }
+  }
+
+  /*-- FUNÇÃO PARA ZERAR O APP --*/
+  async function resetApp() {
+    try {
+      setListTask([]);
+
+      await AsyncStorage.removeItem('tasks');
+    } catch (error) {
+      console.error('Erro ao resetar o app:', error);
+    }
+  }
+
+  /*-- CODIGO TSX --*/
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -89,6 +134,14 @@ export default function App() {
 
       <View style={styles.boxInput}>
         <Input addTask={handleAddTask} />
+      </View>
+
+      <View style={styles.boxButton}>
+        <Button title="Carregar API" onPress={loadTasksFromApi} />
+      </View>
+
+      <View style={styles.boxButton}>
+        <Button title="Resetar Lista" onPress={resetApp} color="red" />
       </View>
 
       <View style={styles.boxList}>
@@ -124,6 +177,10 @@ const styles = StyleSheet.create({
   },
   boxInput: {
     width: '100%',
+  },
+  boxButton: {
+    margin: 10,
+    width: '50%',
   },
   boxList: {
     marginTop: 30,
