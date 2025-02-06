@@ -1,5 +1,5 @@
 /*-- IMPORTS PADRAO --*/
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, Button, FlatList } from 'react-native';
 
@@ -14,85 +14,95 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 /*-- IMPORT ROTA DA API --*/
 import api from './src/Services/api';
 
-/*INTERFACE PARA OS DADOS DA API*/
+/*-- INTERFACE DAS TASKS DA API --*/
 interface ApiTask {
   id: number;
   title: string;
   completed: boolean;
 }
 
+/*-- INTERFACE PARA AS TASKS DO SISTEMA */
+interface Task {
+  id: number;
+  task: string;
+  color: string;
+  isCompleted: boolean;
+}
+
 export default function App() {
 
   /*-- ESTADOS --*/
-  const [listTask, setListTask] = useState<{id: number; task: string; color: string; isCompleted: boolean}[]>([]);
+  const [listTask, setListTask] = useState<Task[]>([]);
 
-  /*-- SALVAR AS TAREFAS NO ASYNCSTORAGE --*/
-  async function saveToStorage(tasks: {id: number; task: string; color: string; isCompleted: boolean}[]) {
+  /*-- FUNÇÃO QUE SALVA AS TAREFAS NO ASYNCSTORAGE --*/
+  const saveToStorage = useCallback(async (tasks: Task[]) => {
     try {
       const tasksString = JSON.stringify(tasks);
       await AsyncStorage.setItem('tasks', tasksString);
     } catch (error) {
       console.error('Erro ao salvar tarefas no AsyncStorage:', error);
     }
-  }
+  }, []);
 
   /*-- FUNÇÃO PARA CARREGAR AS TAREFAS DO ASYNCSTORAGE --*/
-  async function loadFromStorage() {
+  const loadFromStorage = useCallback(async () => {
     try {
       const tasksString = await AsyncStorage.getItem('tasks');
       if (tasksString) {
-        const tasks = JSON.parse(tasksString);
-        setListTask(tasks); 
+        setListTask(JSON.parse(tasksString));
       }
     } catch (error) {
       console.error('Erro ao carregar tarefas do AsyncStorage:', error);
     }
-  }
-
-  /*-- CARREGAR AS TAREFAS AO INICIAR O APP --*/
-  useEffect(() => {
-    loadFromStorage();
   }, []);
 
-  /*-- SALVAR AS TAREFAS NO ASYNCSTORAGE SEMPRE QUE ALTERAR A LISTA --*/
+  /*-- CARREGAS AS TAREFAS AO INICIAR --*/
+  useEffect(() => {
+    loadFromStorage();
+  }, [loadFromStorage]);
+
+  /*-- ATUALIZA O ASYNCSTORAGE SEMPRE QUE TIVER UMA MUDANÇA NA LISTA --*/
   useEffect(() => {
     if (listTask.length > 0) {
       saveToStorage(listTask);
     }
-  }, [listTask]);
+  }, [listTask, saveToStorage]);
 
-  /*-- FUNÇÃO PARA ADICIONAR UMA TAREFA --*/
-  function handleAddTask(newTask: { id: number; task: string; color: string }) {
+  /*-- FUNÇÃO QUE ORDENA AS TAREFAS --*/
+  const sortTasks = (tasks: Task[]) => {
+    return tasks.sort((a, b) => (a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1));
+  };
+
+  /*-- FUNÇÃO PARA ADICIONAR TAREFAS DO INPUT --*/
+  const handleAddTask = (newTask: { id: number; task: string; color: string }) => {
     setListTask((prevList) => {
       const updatedList = [{ ...newTask, isCompleted: false }, ...prevList];
-      updatedList.sort((a, b) => (a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1));
-      return updatedList;
+      return sortTasks(updatedList);
     });
-  }
+  };
 
-  /*-- FUNÇÃO QUE DELETA AS TAREFAS --*/
-  function handleDeleteTask(id: number) {
+  /*-- FUNÇÃO PARA DELETAR AS TAREFAS --*/
+  const handleDeleteTask = (id: number) => {
     setListTask((prevList) => prevList.filter(task => task.id !== id));
-  }
+  };
 
-  /*-- FUNÇÃO PARA MARCAR AS TAREFAS COMO CONCLUIDAS --*/
-  function handleCheckTask(id: number) {
+  /*-- FUNÇÃO QUE MARCA AS TAREFAS COMO CONCLUIDAS --*/
+  const handleCheckTask = (id: number) => {
     setListTask((prevList) => {
       const updatedList = prevList.map((task) =>
-        task.id === id ? { ...task, isCompleted: !task.isCompleted } : task 
+        task.id === id ? { ...task, isCompleted: !task.isCompleted } : task
       );
-      updatedList.sort((a, b) => (a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1));
-      return updatedList;
+      return sortTasks(updatedList);
     });
-  }
+  };
 
-  /*-- FUNÇÃO PARA CARREGAR AS TAREFAS DA API --*/
-  async function loadTasksFromApi() {
+  /*-- FUNÇÃO QUE CARREGA AS TAREFAS PELA API --*/
+  const loadTasksFromApi = async () => {
     try {
       const response = await api.get('/todos');
       const data: ApiTask[] = response.data;
 
-      const mappedTasks = data.map((apiTask: ApiTask) => ({
+      const mappedTasks = data.map((apiTask) => ({
         id: apiTask.id,
         task: apiTask.title,
         color: 'gray',
@@ -100,32 +110,28 @@ export default function App() {
       }));
 
       setListTask((prevList) => {
-        const uniqueTasks = mappedTasks.filter((apiTask) => 
+        const uniqueTasks = mappedTasks.filter((apiTask) =>
           !prevList.some((task) => task.id === apiTask.id)
         );
 
-        const updatedList = [...prevList, ...uniqueTasks];
-
-        updatedList.sort((a, b) => (a.isCompleted === b.isCompleted ? 0 : a.isCompleted ? 1 : -1));
-        return updatedList;
+        return sortTasks([...prevList, ...uniqueTasks]);
       });
     } catch (error) {
       console.error('Erro ao carregar tarefas da API:', error);
     }
-  }
+  };
 
-  /*-- FUNÇÃO PARA ZERAR O APP --*/
-  async function resetApp() {
+  /*-- FUNÇÃO PARA ZERAR O ASYNCSTORAGE --*/
+  const resetApp = async () => {
     try {
       setListTask([]);
-
       await AsyncStorage.removeItem('tasks');
     } catch (error) {
       console.error('Erro ao resetar o app:', error);
     }
-  }
+  };
 
-  /*-- CODIGO TSX --*/
+  /*-- CÓDIGO EM TSX --*/
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -141,7 +147,7 @@ export default function App() {
       </View>
 
       <View style={styles.boxButton}>
-        <Button title="Resetar Lista" onPress={resetApp} color="red" />
+        <Button title="Zerar App" onPress={resetApp} color="red" />
       </View>
 
       <View style={styles.boxList}>
@@ -158,7 +164,6 @@ export default function App() {
 }
 
 /*-- FOLHA DE ESTILOS --*/
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

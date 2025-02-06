@@ -1,8 +1,11 @@
+/*-- IMPORTES PADÕRES --*/
 import React from 'react';
 import { StyleSheet, Text, View, Image } from "react-native";
 
+/*-- IMPORTE DOS ICONES --*/
 import Icon from 'react-native-vector-icons/Entypo'
 
+/*-- CÓDIGO EM TSX --*/
 export default function Header(){
     return(
         <View style={styles.container}>
@@ -14,9 +17,9 @@ export default function Header(){
     );
 }
 
+/*-- FOLHA DE ESTILO --*/
 const styles = StyleSheet.create({
     container:{
-        flex:1,
         flexDirection:'row',
         justifyContent:'space-around',
         alignItems:'center'
